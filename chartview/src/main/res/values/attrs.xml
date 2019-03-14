@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="chat_view_bg_color" format="color"/>
+    <attr name="data_container_bg_color" format="color"/>
+
+    <declare-styleable name="ChartView">
+        <attr name="android:textSize" format="dimension"/>
+        <attr name="chart_stroke_width" format="dimension"/>
+        <attr name="axis_text_color" format="color"/>
+        <attr name="line_color" format="color"/>
+        <attr name="value_fill_color" format="color"/>
+        <attr name="chartViewStyle" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="ChartSpinner">
+        <attr name="spinner_height" format="dimension"/>
+        <attr name="foreground_color" format="color"/>
+        <attr name="frame_color" format="color"/>
+        <attr name="chartSpinnerStyle" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="ChipView">
+        <attr name="android:text" />
+        <attr name="android:textColor" />
+        <attr name="android:textSize" />
+        <attr name="android:padding" />
+        <attr name="strokeColor" format="color"/>
+        <attr name="default_background" format="color"/>
+        <attr name="checked_background" format="color"/>
+        <attr name="outlineWidth" format="dimension" />
+        <attr name="radius" format="dimension" />
+        <attr name="font" format="reference" />
+        <attr name="isChecked" format="boolean" />
+        <attr name="chipViewStyle" format="reference" />
+    </declare-styleable>
+</resources>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="lines_color">#DADADA</color>
+    <color name="animation_lines_color">#00DADADA</color>
+    <color name="lines_color_night">#40515F</color>
+    <color name="axis_text_color">#96a2aa</color>
+    <color name="axis_text_color_night">#506372</color>
+
+    <color name="spinner_frame_color">#B3DBE7F0</color>
+    <color name="spinner_frame_color_night">#B332465B</color>
+    <color name="spinner_foreground_color">#80F0F0F0</color>
+    <color name="spinner_foreground_color_night">#A61A242E</color>
+
+    <color name="color_outline">#8cc3c5d1</color>
+    <color name="color_outline_night">#40515F</color>
+    <color name="chip_background">#14e292cf</color>
+    <color name="chip_text_color">#2F2F2F</color>
+    <color name="chip_text_color_night">#506372</color>
+
+    <color name="value_fill_color">#ffffff</color>
+    <color name="value_fill_color_night">#1d2733</color>
+</resources>

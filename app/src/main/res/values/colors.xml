@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#517da2</color>
+    <color name="colorPrimaryNight">#212d3b</color>
+    <color name="colorPrimaryDark">#426382</color>
+    <color name="colorPrimaryDarkNight">#1a242e</color>
+    <color name="colorAccent">#3896d4</color>
+
+    <color name="data_container_bg">#ffffff</color>
+    <color name="data_container_bg_night">#202b38</color>
+
+    <color name="windows_background">#f0f0f0</color>
+    <color name="windows_background_night">#151e27</color>
+
+    <color name="text_color">#3896d4</color>
+    <color name="chat_view_bg_color">#ffffff</color>
+    <color name="chat_view_bg_color_night">#1d2733</color>
+</resources>

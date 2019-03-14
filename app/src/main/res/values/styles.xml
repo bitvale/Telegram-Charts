@@ -1,0 +1,34 @@
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@android:color/white</item>
+        <item name="colorPrimaryDark">@android:color/white</item>
+        <item name="colorAccent">@android:color/white</item>
+        <item name="android:windowBackground">@drawable/splash</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+    </style>
+
+    <style name="AppThemeLight" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowBackground">@color/windows_background</item>
+        <item name="chat_view_bg_color">@color/chat_view_bg_color</item>
+        <item name="data_container_bg_color">@color/data_container_bg</item>
+        <item name="chartViewStyle">@style/ChartView</item>
+        <item name="chartSpinnerStyle">@style/ChartSpinner</item>
+        <item name="chipViewStyle">@style/ChipView</item>
+    </style>
+
+    <style name="AppThemeNight" parent="Theme.AppCompat">
+        <item name="colorPrimary">@color/colorPrimaryNight</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkNight</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowBackground">@color/windows_background_night</item>
+        <item name="chat_view_bg_color">@color/chat_view_bg_color_night</item>
+        <item name="data_container_bg_color">@color/data_container_bg_night</item>
+        <item name="chartViewStyle">@style/ChartViewNight</item>
+        <item name="chartSpinnerStyle">@style/ChartSpinnerNight</item>
+        <item name="chipViewStyle">@style/ChipViewNight</item>
+    </style>
+</resources>

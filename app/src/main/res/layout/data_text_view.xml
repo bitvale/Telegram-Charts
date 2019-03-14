@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/date_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Sat, Feb 24"
+        android:textSize="@dimen/font_small"
+        android:layout_marginEnd="@dimen/margin_small"
+        android:layout_marginTop="@dimen/margin_small"
+        android:textColor="?android:attr/textColorPrimary"/>

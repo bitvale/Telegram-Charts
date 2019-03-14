@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <dimen name="text_size">14sp</dimen>
+    <dimen name="def_margin">16dp</dimen>
+    <dimen name="spinner_height">56dp</dimen>
+
+    <dimen name="space_small">8dp</dimen>
+    <dimen name="padding_small">@dimen/space_small</dimen>
+
+    <dimen name="font_medium">14sp</dimen>
+    <dimen name="chart_stroke_width">3dp</dimen>
+    <dimen name="chip_outline_width" tools:ignore="PxUsage">1dp</dimen>
+</resources>
