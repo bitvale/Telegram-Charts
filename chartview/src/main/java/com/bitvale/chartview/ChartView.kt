@@ -461,7 +461,7 @@ class ChartView @JvmOverloads constructor(
 
         val dataPos = if (valuesAxisXCoordinate == xAxisCoordinates[value]) valuePosition
         else valuePosition - 1
-        val data = Chart.ChartSelectedData(xAxis[dataPos], ArrayList())
+        val data = Chart.ChartSelectedData(xAxis[dataPos], ArrayList<Chart.Data>())
 
         var i = 0
         yAxis.forEach {

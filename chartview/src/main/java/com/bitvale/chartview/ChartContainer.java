@@ -60,27 +60,27 @@ public class ChartContainer extends LinearLayout {
     private void createControls(Chart chart) {
         controlsContainer.removeAllViews();
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        for (int i = 1; i < chart.getColumns().size(); i++) {
+        for (int i = 1; i < chart.columns.size(); i++) {
             ChipView chip = (ChipView) inflater.inflate(R.layout.chip_view, this, false);
-            Chart.Column column = chart.getColumns().get(i);
-            chip.setChecked(column.getEnabled());
-            chip.setText(column.getName());
-            chip.setCheckedColor(Color.parseColor(column.getColor()));
+            Chart.Column column = chart.columns.get(i);
+            chip.setChecked(column.enabled);
+            chip.setText(column.name);
+            chip.setCheckedColor(Color.parseColor(column.color));
             chip.setOnClickListener(v -> {
                 int enabled = 0;
                 if (chip.isChecked()) {
-                    for (int j = 1; j < chart.getColumns().size(); j++) {
-                        if (chart.getColumns().get(j).getEnabled()) {
+                    for (int j = 1; j < chart.columns.size(); j++) {
+                        if (chart.columns.get(j).enabled) {
                             enabled++;
                         }
                     }
                 }
                 if (enabled == 1) return;
 
-                column.setEnabled(!column.getEnabled());
+                column.enabled = !column.enabled;
                 Chart.ChartAnimation animation = Chart.ChartAnimation.DOWN;
                 if (chip.isChecked()) animation = Chart.ChartAnimation.UP;
-                column.setAnimation(animation);
+                column.animation = animation;
 
                 chartView.animateInOut(chip.isChecked());
                 chip.animateChecked();
