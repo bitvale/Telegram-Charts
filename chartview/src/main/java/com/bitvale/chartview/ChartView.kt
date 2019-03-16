@@ -9,7 +9,6 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.text.TextPaint
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.ColorInt
@@ -80,12 +79,16 @@ class ChartView @JvmOverloads constructor(
             invalidate()
         }
 
+    private var chartAlpha = OPAQUE
+    private var chartTranslationOffset = 0f
+
     private var yAxisOldAlpha = OPAQUE
     private var yAxisNewAlpha = TRANSPARENT
 
     private var isChartDrawing = false
 
     private var animatorSet: AnimatorSet = AnimatorSet()
+    private var inOutAnimatorSet: AnimatorSet = AnimatorSet()
 
     private val dayFormat = SimpleDateFormat("MMM d", Locale.US)
 
@@ -143,7 +146,7 @@ class ChartView @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        linesOffset = (h - (textPaint.textSize * 3f) - linesHeight * TITLES_COUNT) / (TITLES_COUNT - 1)
+        linesOffset = (h - (textPaint.textSize * (OFFSET_COEFFICIENT * 2f)) - linesHeight * TITLES_COUNT) / (TITLES_COUNT - 1)
         yAxisAnimationOffset = linesOffset / 2f
     }
 
@@ -151,7 +154,7 @@ class ChartView @JvmOverloads constructor(
         if (yAxis.isEmpty()) return
         isChartDrawing = false
         yAxis.forEach {
-            if (it.enabled) {
+            if (it.enabled || it.animation != Chart.ChartAnimation.NONE) {
                 isChartDrawing = true
                 return@forEach
             }
@@ -163,7 +166,7 @@ class ChartView @JvmOverloads constructor(
         drawXAxisTitles(canvas)
 
         yAxis.forEach {
-            if (it.enabled) drawChart(canvas, it)
+            if (it.enabled || it.animation != Chart.ChartAnimation.NONE) drawChart(canvas, it)
         }
         if (isChartDrawing) {
             drawYAxisTitles(canvas)
@@ -172,13 +175,13 @@ class ChartView @JvmOverloads constructor(
     }
 
     private fun drawXHorizontalLines(canvas: Canvas?) {
-        drawOldXHorizontalLines(canvas)
-        drawNewXHorizontalLines(canvas)
+        drawOldGridHorizontalLines(canvas)
+        drawNewGridHorizontalLines(canvas)
     }
 
-    private fun drawOldXHorizontalLines(canvas: Canvas?) {
+    private fun drawOldGridHorizontalLines(canvas: Canvas?) {
         for (i in 0 until TITLES_COUNT) {
-            var yOffset = i * linesOffset + textPaint.textSize * 1.5f + (i * linesHeight)
+            var yOffset = i * linesOffset + textPaint.textSize * OFFSET_COEFFICIENT + (i * linesHeight)
             axisPaint.alpha = yAxisOldAlpha.toInt()
             if (i < TITLES_COUNT - 1) yOffset += yAxisOldAnimatedOffset
             else axisPaint.alpha = OPAQUE.toInt()
@@ -190,9 +193,9 @@ class ChartView @JvmOverloads constructor(
         }
     }
 
-    private fun drawNewXHorizontalLines(canvas: Canvas?) {
+    private fun drawNewGridHorizontalLines(canvas: Canvas?) {
         for (i in 0 until TITLES_COUNT) {
-            var yOffset = i * linesOffset + textPaint.textSize * 1.5f + (i * linesHeight)
+            var yOffset = i * linesOffset + textPaint.textSize * OFFSET_COEFFICIENT + (i * linesHeight)
             val m = if (yAxisNewAnimatedOffset < 0) -1 else 1
             axisPaint.alpha = yAxisNewAlpha.toInt()
             if (i < TITLES_COUNT - 1) yOffset = yOffset - (linesOffset * m) + yAxisNewAnimatedOffset
@@ -212,7 +215,7 @@ class ChartView @JvmOverloads constructor(
 
     private fun drawOldYAxisTitle(canvas: Canvas?) {
         for (i in 0 until TITLES_COUNT) {
-            var yOffset = i * linesOffset + textPaint.textSize * 1.5f + (i * linesHeight)
+            var yOffset = i * linesOffset + textPaint.textSize * OFFSET_COEFFICIENT + (i * linesHeight)
             val title = (yOldStep * ((TITLES_COUNT - 1) - i)).toInt().toString()
             textPaint.alpha = yAxisOldAlpha.toInt()
             if (i < TITLES_COUNT - 1) yOffset += yAxisOldAnimatedOffset
@@ -227,7 +230,7 @@ class ChartView @JvmOverloads constructor(
 
     private fun drawNewYAxisTitle(canvas: Canvas?) {
         for (i in 0 until TITLES_COUNT) {
-            var yOffset = i * linesOffset + textPaint.textSize * 1.5f + (i * linesHeight)
+            var yOffset = i * linesOffset + textPaint.textSize * OFFSET_COEFFICIENT + (i * linesHeight)
             val title = (yNewStep * ((TITLES_COUNT - 1) - i)).toInt().toString()
             val m = if (yAxisNewAnimatedOffset < 0) -1 else 1
             textPaint.alpha = yAxisNewAlpha.toInt()
@@ -256,7 +259,7 @@ class ChartView @JvmOverloads constructor(
     private fun drawXAxisTitles(canvas: Canvas?) {
         val textStep = width / (TITLES_COUNT - 0f)
 
-        val yOffset = height - (textPaint.textSize * 0.5f)
+        val yOffset = height - (textPaint.textSize * (OFFSET_COEFFICIENT / 2f))
 
         val step = xAxisCoordinates.size / TITLES_COUNT
 
@@ -296,7 +299,7 @@ class ChartView @JvmOverloads constructor(
     private fun calculateHorizontalStep() {
         var max = 0
         yAxis.forEach {
-            if (it.enabled) {
+            if (it.enabled || it.animation == Chart.ChartAnimation.DOWN) {
                 for (i in startIndex..endIndex) {
                     val newMax = it.values[i]
                     if (newMax > max) max = newMax.toInt()
@@ -304,19 +307,18 @@ class ChartView @JvmOverloads constructor(
             }
         }
 
-
         // for drawing some chart values under the top horizontal (y) axis
         while (max % 5 != 0) {
             if (max > 10) max--
             else max++
         }
-
+        
         val tmp = max / (TITLES_COUNT - 1f)
         if (tmp != yNewStep || yOldStep == 0f) {
             if (!animatorSet.isRunning) yOldStep = yNewStep
             yNewStep = tmp
             if (yOldStep == 0f) yOldStep = yNewStep
-            yMultiplier = linesOffset / yNewStep
+            if (yNewStep > 0) yMultiplier = linesOffset / yNewStep
             if (yCurrentMultiplier == 0f) yCurrentMultiplier = yMultiplier
         }
 
@@ -324,10 +326,7 @@ class ChartView @JvmOverloads constructor(
             if (yMaxValue > max) startYAxisAnimation(true)
             else if (yMaxValue < max) startYAxisAnimation(false)
         }
-
-        Log.d("ChartView", "calculateHorizontalStep: yCurrentMultiplier 123 $yCurrentMultiplier")
-        Log.d("ChartView", "calculateHorizontalStep: yMultiplier 123 $yMultiplier")
-        yMaxValue = max
+        if (max != 0) yMaxValue = max
     }
 
     private val yMultiplierAnimator: ValueAnimator? = null
@@ -392,12 +391,50 @@ class ChartView @JvmOverloads constructor(
         }
     }
 
+    fun animateInOut(out: Boolean) {
+        inOutAnimatorSet.cancel()
+
+        val from = 0f
+        val to = if (out) -1f else 1f
+
+        val translateAnimator = ValueAnimator.ofFloat(from, to).apply {
+            addUpdateListener {
+                val value = it.animatedValue as Float
+                if (out) {
+                    chartTranslationOffset = lerp(0f, linesOffset * 4, value)
+                    chartAlpha = lerp(OPAQUE, TRANSPARENT, Math.abs(value))
+                } else {
+                    chartTranslationOffset = lerp(linesOffset * -4, 0f, value)
+                    chartAlpha = lerp(TRANSPARENT, OPAQUE, Math.abs(value))
+                }
+                invalidate()
+            }
+            doOnEnd {
+                yAxis.forEach {
+                    it.animation = Chart.ChartAnimation.NONE
+                }
+            }
+            interpolator = FastOutSlowInInterpolator()
+            duration = ANIMATION_DURATION
+        }
+
+        inOutAnimatorSet.apply {
+            playTogether(translateAnimator)
+            start()
+        }
+    }
+
     private fun drawChart(canvas: Canvas?, column: Chart.Column) {
         chartPaint.color = Color.parseColor(column.color)
         chartPath.reset()
         for (i in startIndex..endIndex) {
             val x = xAxisCoordinates[xAxis[i]]!!
-            val y = getYCoordinate(column.values[i].toFloat())
+            var y = getYCoordinate(column.values[i].toFloat())
+            chartPaint.alpha = OPAQUE.toInt()
+            if (column.animation != Chart.ChartAnimation.NONE) {
+                y += chartTranslationOffset
+                chartPaint.alpha = chartAlpha.toInt()
+            }
             if (i == startIndex) chartPath.moveTo(x, y)
             else chartPath.lineTo(x, y)
         }
@@ -410,7 +447,7 @@ class ChartView @JvmOverloads constructor(
             valuesAxisXCoordinate,
             0f,
             valuesAxisXCoordinate,
-            (TITLES_COUNT - 1) * linesOffset + textPaint.textSize * 1.5f + (TITLES_COUNT * linesHeight),
+            (TITLES_COUNT - 1) * linesOffset + textPaint.textSize * OFFSET_COEFFICIENT + (TITLES_COUNT * linesHeight),
             axisPaint
         )
         drawValues(canvas)
@@ -483,10 +520,11 @@ class ChartView @JvmOverloads constructor(
     }
 
     private fun getYCoordinate(value: Float): Float {
-        return height - (textPaint.textSize * 1.5f) - linesHeight * (TITLES_COUNT - 1) - value * yCurrentMultiplier
+        return height - (textPaint.textSize * OFFSET_COEFFICIENT) - linesHeight * (TITLES_COUNT - 1) - value * yCurrentMultiplier
     }
 
     companion object {
+        const val OFFSET_COEFFICIENT = 2.5f
         const val TITLES_COUNT = 6
         const val ANIMATION_DURATION = 450L
         const val ANIMATION_DELAY = 100L

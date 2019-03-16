@@ -3,9 +3,7 @@ package com.bitvale.chartview
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.LinearLayout
 import androidx.core.view.updateMargins
 
@@ -30,7 +28,7 @@ class ChartContainer @JvmOverloads constructor(
         chartSpinner.setChartListener(chartView)
         addView(chartView)
         addView(chartSpinner)
-        (chartSpinner.layoutParams as MarginLayoutParams).updateMargins(top = margin)
+        (chartSpinner.layoutParams as MarginLayoutParams).updateMargins(top = margin / 2)
         addView(controlsContainer)
         (controlsContainer.layoutParams as MarginLayoutParams).updateMargins(top = margin)
     }
@@ -50,9 +48,20 @@ class ChartContainer @JvmOverloads constructor(
             chip.setText(chart.columns[i].name)
             chip.setCheckedColor(Color.parseColor(chart.columns[i].color))
             chip.setOnClickListener {
+                var enabled = 0
+                if (chip.isChecked) {
+                    for (j in 1 until chart.columns.size) {
+                        if (chart.columns[j].enabled) {
+                            enabled++
+                        }
+                    }
+                }
+                if (enabled == 1) return@setOnClickListener
+
                 chart.columns[i].enabled = !chart.columns[i].enabled
+                chart.columns[i].animation = if (chip.isChecked) Chart.ChartAnimation.UP else Chart.ChartAnimation.DOWN
+                chartView.animateInOut(chip.isChecked)
                 chip.animateChecked()
-                chartView.invalidate()
                 chartSpinner.invalidate()
             }
             controlsContainer.addView(chip)

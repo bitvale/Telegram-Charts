@@ -7,15 +7,23 @@ import kotlinx.android.parcel.Parcelize
  * Created by Alexander Kolpakov (jquickapp@gmail.com) on 10-Mar-19
  */
 @Parcelize
-data class Chart(val columns: ArrayList<Column>): Parcelable {
+data class Chart(val columns: ArrayList<Column>) : Parcelable {
 
     @Parcelize
-    data class Column(val name: String, val type: Type, val color: String, val values: ArrayList<Long>,
-                      var enabled: Boolean = true): Parcelable
+    data class Column(
+        val name: String, val type: Type, val color: String, val values: ArrayList<Long>,
+        var enabled: Boolean = true, var animation: ChartAnimation = ChartAnimation.NONE
+    ) : Parcelable
 
     enum class Type(val value: String) {
         LINE("line"),
         X("x")
+    }
+
+    enum class ChartAnimation {
+        UP,
+        DOWN,
+        NONE
     }
 
     data class ChartSelectedData(val date: Long, val values: ArrayList<Data>)
