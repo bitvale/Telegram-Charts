@@ -44,9 +44,10 @@ class ChartContainer @JvmOverloads constructor(
         val inflater = LayoutInflater.from(context)
         for (i in 1 until chart.columns.size) {
             val chip: ChipView = inflater.inflate(R.layout.chip_view, this, false) as ChipView
-            chip.isChecked = chart.columns[i].enabled
-            chip.setText(chart.columns[i].name)
-            chip.setCheckedColor(Color.parseColor(chart.columns[i].color))
+            val column = chart.columns[i]
+            chip.isChecked = column.enabled
+            chip.setText(column.name)
+            chip.setCheckedColor(Color.parseColor(column.color))
             chip.setOnClickListener {
                 var enabled = 0
                 if (chip.isChecked) {
@@ -58,8 +59,8 @@ class ChartContainer @JvmOverloads constructor(
                 }
                 if (enabled == 1) return@setOnClickListener
 
-                chart.columns[i].enabled = !chart.columns[i].enabled
-                chart.columns[i].animation = if (chip.isChecked) Chart.ChartAnimation.UP else Chart.ChartAnimation.DOWN
+                column.enabled = !column.enabled
+                column.animation = if (chip.isChecked) Chart.ChartAnimation.UP else Chart.ChartAnimation.DOWN
                 chartView.animateInOut(chip.isChecked)
                 chip.animateChecked()
                 chartSpinner.invalidate()
