@@ -16,7 +16,7 @@ public class Chart implements Parcelable {
         this.columns = columns;
     }
 
-    public Chart(Parcel in) {
+    private  Chart(Parcel in) {
         in.readList(columns, Column.class.getClassLoader());
     }
 
@@ -59,7 +59,7 @@ public class Chart implements Parcelable {
             animation = ChartAnimation.NONE;
         }
 
-        public Column(Parcel in) {
+        private Column(Parcel in) {
             name = in.readString();
             type = Type.valueOf(in.readString());
             color = in.readString();
