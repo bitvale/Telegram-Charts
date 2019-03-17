@@ -3,6 +3,7 @@ package com.bitvale.chartview.widget.chart;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 import androidx.annotation.Nullable;
@@ -63,7 +64,6 @@ public class ChartContainer extends LinearLayout {
         for (int i = 1; i < chart.columns.size(); i++) {
             yAxis.add(chart.columns.get(i));
         }
-
         chartView.setupData(xAxis, yAxis);
         chartSpinner.setupData(xAxis, yAxis);
         createControls(chart);

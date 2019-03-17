@@ -70,14 +70,11 @@ public class ChartView extends View implements ChartSpinnerListener {
 
     @ColorInt
     private int axisColor = 0;
-    @ColorInt
-    private int axisAnimationColor = 0;
 
     private int startIndex = 0;
     private int endIndex = 0;
     private float valuesAxisXCoordinate = 0f;
 
-    private float yAxisAnimationOffset = 0f;
     private int yMaxValue = 0;
     private float yAxisOldAnimatedOffset = 0f;
 
@@ -127,7 +124,6 @@ public class ChartView extends View implements ChartSpinnerListener {
 
         axisColor = a.getColor(R.styleable.ChartView_line_color, 0);
         axisPaint.setColor(axisColor);
-        axisAnimationColor = ContextCompat.getColor(context, R.color.animation_lines_color);
 
         int textPaintColor = a.getColor(R.styleable.ChartView_axis_text_color, 0);
         float textPaintTextSize = a.getDimension(R.styleable.ChartView_android_textSize, 0f);
@@ -162,7 +158,6 @@ public class ChartView extends View implements ChartSpinnerListener {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         linesOffset = (h - (textPaint.getTextSize() * (OFFSET_COEFFICIENT * 2f)) - linesHeight * TITLES_COUNT) / (TITLES_COUNT - 1);
-        yAxisAnimationOffset = linesOffset / 2f;
     }
 
 
