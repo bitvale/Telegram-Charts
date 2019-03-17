@@ -64,7 +64,7 @@
                     android:layout_marginTop="@dimen/margin_normal"
                     android:layout_marginStart="@dimen/margin_normal"/>
 
-            <com.bitvale.chartview.ChartContainer
+            <com.bitvale.chartview.widget.chart.ChartContainer
                     android:id="@+id/chart"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

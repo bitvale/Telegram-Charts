@@ -1,4 +1,4 @@
-package com.bitvale.chartview;
+package com.bitvale.chartview.widget.chart;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -8,6 +8,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
+import com.bitvale.chartview.ChartSpinnerListener;
+import com.bitvale.chartview.R;
+import com.bitvale.chartview.model.Chart;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,7 +22,7 @@ public class ChartSpinner extends View {
 
     private ChartSpinnerListener listener;
 
-    private ArrayList<Long> xAxis;
+    private ArrayList<Long> xAxis = new ArrayList<>();
     private ArrayList<Chart.Column> yAxis = new ArrayList<Chart.Column>();
 
     private Paint chartPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -187,14 +190,6 @@ public class ChartSpinner extends View {
         canvas.drawRect(frameOuterRect.right, 0f, getWidth(), spinnerHeight, paint);
     }
 
-    void setupData(Chart chart) {
-        xAxis = chart.columns.get(0).values;
-        for (int i = 1; i < chart.columns.size(); i++) {
-            yAxis.add(chart.columns.get(i));
-        }
-        invalidate();
-    }
-
     private void calculateMultipliers() {
         int max = 0;
         for (int i = 0; i < yAxis.size(); i++) {
@@ -271,6 +266,13 @@ public class ChartSpinner extends View {
         return true;
     }
 
+    public void setupData(ArrayList<Long> xAxis,  ArrayList<Chart.Column> yAxis) {
+        this.xAxis.clear();
+        this.yAxis.clear();
+        this.xAxis.addAll(xAxis);
+        this.yAxis.addAll(yAxis);
+        invalidate();
+    }
 
     public void setChartListener(ChartSpinnerListener listener) {
         this.listener = listener;

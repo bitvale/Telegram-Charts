@@ -1,4 +1,4 @@
-package com.bitvale.chartview;
+package com.bitvale.chartview.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
  */
 public class Chart implements Parcelable {
 
-    ArrayList<Column> columns;
+    public ArrayList<Column> columns;
 
     public Chart(ArrayList<Column> columns) {
         this.columns = columns;
@@ -43,12 +43,12 @@ public class Chart implements Parcelable {
     }
 
     public static class Column implements Parcelable {
-        String name;
-        Type type;
-        String color;
-        ArrayList<Long> values;
-        boolean enabled;
-        ChartAnimation animation;
+        public String name;
+        public Type type;
+        public String color;
+        public ArrayList<Long> values;
+        public boolean enabled;
+        public ChartAnimation animation;
 
         public Column(String name, Type type, String color, ArrayList<Long> values) {
             this.name = name;
