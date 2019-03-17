@@ -89,6 +89,7 @@ class ChartView @JvmOverloads constructor(
 
     private var animatorSet: AnimatorSet = AnimatorSet()
     private var inOutAnimatorSet: AnimatorSet = AnimatorSet()
+    private var yMultiplierAnimator: ValueAnimator? = null
 
     private val dayFormat = SimpleDateFormat("MMM d", Locale.US)
 
@@ -329,11 +330,9 @@ class ChartView @JvmOverloads constructor(
         if (max != 0) yMaxValue = max
     }
 
-    private val yMultiplierAnimator: ValueAnimator? = null
-
     private fun startYAxisAnimation(animateUp: Boolean) {
         yMultiplierAnimator?.cancel()
-        val yMultiplierAnimator = ValueAnimator.ofFloat(yCurrentMultiplier, yMultiplier).apply {
+        yMultiplierAnimator = ValueAnimator.ofFloat(yCurrentMultiplier, yMultiplier).apply {
             addUpdateListener {
                 yCurrentMultiplier = it.animatedValue as Float
                 invalidate()
@@ -341,7 +340,7 @@ class ChartView @JvmOverloads constructor(
             duration = ANIMATION_DURATION
         }
 
-        yMultiplierAnimator.start()
+        yMultiplierAnimator?.start()
 
         if (animatorSet.isRunning) return
 
