@@ -3,7 +3,7 @@ package com.bitvale.telegramcharts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
-import com.bitvale.chartview.Chart
+import com.bitvale.chartview.model.Chart
 
 /**
  * Created by Alexander Kolpakov (jquickapp@gmail.com) on 11-Mar-19

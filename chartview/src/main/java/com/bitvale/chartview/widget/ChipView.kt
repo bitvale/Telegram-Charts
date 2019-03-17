@@ -1,25 +1,24 @@
-package com.bitvale.chartview
+package com.bitvale.chartview.widget
 
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.Path
 import android.graphics.RectF
 import android.os.Build
-import android.os.Bundle
-import android.os.Parcelable
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import androidx.core.animation.doOnEnd
 import androidx.core.content.res.getColorOrThrow
 import androidx.core.content.res.getDimensionOrThrow
 import androidx.core.content.res.getDimensionPixelSizeOrThrow
 import androidx.core.graphics.withTranslation
+import com.bitvale.chartview.R
+import com.bitvale.chartview.lerp
+import com.bitvale.chartview.textWidth
 
 /**
  * Created by Alexander Kolpakov (jquickapp@gmail.com) on 11-Mar-19

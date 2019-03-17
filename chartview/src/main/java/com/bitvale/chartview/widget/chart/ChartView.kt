@@ -1,4 +1,4 @@
-package com.bitvale.chartview
+package com.bitvale.chartview.widget.chart
 
 import android.animation.AnimatorSet
 import android.animation.ValueAnimator
@@ -13,11 +13,12 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.ColorInt
 import androidx.core.animation.doOnEnd
-import androidx.core.content.ContextCompat
 import androidx.core.content.res.getColorOrThrow
 import androidx.core.content.res.getDimensionOrThrow
 import androidx.core.graphics.withTranslation
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import com.bitvale.chartview.*
+import com.bitvale.chartview.model.Chart
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -33,9 +34,18 @@ class ChartView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr), ChartSpinnerListener {
 
+    companion object {
+        const val OFFSET_COEFFICIENT = 2.5f
+        const val TITLES_COUNT = 6
+        const val ANIMATION_DURATION = 450L
+        const val ANIMATION_DELAY = 100L
+        const val TRANSPARENT = 0f
+        const val OPAQUE = 255f
+    }
+
     private var listener: ChartViewListener? = null
 
-    private lateinit var xAxis: ArrayList<Long>
+    private var xAxis = ArrayList<Long>()
     private val yAxis = ArrayList<Chart.Column>()
 
     private val axisPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -48,6 +58,10 @@ class ChartView @JvmOverloads constructor(
     private var linesOffset = 0f
 
     private val xAxisCoordinates = LinkedHashMap<Long, Float>()
+    private var firstXCoordinate = 0f
+    private var lastXCoordinate = 0f
+    private var firstXValue = 0L
+    private var lastXValue = 0L
 
     private var yNewStep = 0f
     private var yOldStep = 0f
@@ -62,14 +76,11 @@ class ChartView @JvmOverloads constructor(
 
     @ColorInt
     private var axisColor = 0
-    @ColorInt
-    private var axisAnimationColor = 0
 
     private var startIndex = 0
     private var endIndex = 0
     private var valuesAxisXCoordinate = 0f
 
-    private var yAxisAnimationOffset = 0f
     private var yMaxValue = 0
     private var yAxisOldAnimatedOffset = 0f
 
@@ -107,7 +118,6 @@ class ChartView @JvmOverloads constructor(
 
         axisColor = a.getColorOrThrow(R.styleable.ChartView_line_color)
         axisPaint.color = axisColor
-        axisAnimationColor = ContextCompat.getColor(context, R.color.animation_lines_color)
 
         textPaint.apply {
             color = a.getColorOrThrow(R.styleable.ChartView_axis_text_color)
@@ -129,13 +139,6 @@ class ChartView @JvmOverloads constructor(
         a.recycle()
     }
 
-    fun setupData(chart: Chart) {
-        xAxis = chart.columns[0].values
-        for (i in 1 until chart.columns.size) {
-            yAxis.add(chart.columns[i])
-        }
-    }
-
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val widthSize = View.MeasureSpec.getSize(widthMeasureSpec)
@@ -148,7 +151,6 @@ class ChartView @JvmOverloads constructor(
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         linesOffset = (h - (textPaint.textSize * (OFFSET_COEFFICIENT * 2f)) - linesHeight * TITLES_COUNT) / (TITLES_COUNT - 1)
-        yAxisAnimationOffset = linesOffset / 2f
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -253,7 +255,16 @@ class ChartView @JvmOverloads constructor(
             val textWidth = textPaint.measureText(title)
             val textStartX = (step - textWidth) / 2f
             val s = if (daysBeforeFrame == 0) j else j - 1
-            xAxisCoordinates[xAxis[i]] = textStartX + textWidth / 2f + s * step
+            val coordinate = textStartX + textWidth / 2f + s * step
+            if (i == startIndex) {
+                firstXCoordinate = coordinate
+                firstXValue = xAxis[i]
+            }
+            if (i == endIndex) {
+                lastXCoordinate = coordinate
+                lastXValue = xAxis[i]
+            }
+            xAxisCoordinates[xAxis[i]] = coordinate
         }
     }
 
@@ -276,7 +287,7 @@ class ChartView @JvmOverloads constructor(
             val xOffset = j * textStep
             var textWidth = textPaint.measureText(title)
             var value = xAxisCoordinates.entries.find { it.value >= (xOffset + textWidth / 2f) }?.key
-            if (value == null) value = xAxisCoordinates.entries.last().key
+            if (value == null) value = lastXValue
 
             title = dayFormat.format(value)
 
@@ -351,7 +362,11 @@ class ChartView @JvmOverloads constructor(
             addUpdateListener {
                 val value = it.animatedValue as Float
                 yAxisOldAnimatedOffset = lerp(0f, linesOffset, value)
-                yAxisOldAlpha = lerp(OPAQUE, TRANSPARENT, Math.abs(value))
+                yAxisOldAlpha = lerp(
+                    OPAQUE,
+                    TRANSPARENT,
+                    Math.abs(value)
+                )
             }
             interpolator = FastOutSlowInInterpolator()
             duration = ANIMATION_DURATION / 2
@@ -370,7 +385,11 @@ class ChartView @JvmOverloads constructor(
         val newAlphaAnimator = ValueAnimator.ofFloat(from, to).apply {
             addUpdateListener {
                 val value = it.animatedValue as Float
-                yAxisNewAlpha = lerp(TRANSPARENT, OPAQUE, Math.abs(value))
+                yAxisNewAlpha = lerp(
+                    TRANSPARENT,
+                    OPAQUE,
+                    Math.abs(value)
+                )
             }
             doOnEnd {
                 yAxisOldAlpha = OPAQUE
@@ -401,10 +420,18 @@ class ChartView @JvmOverloads constructor(
                 val value = it.animatedValue as Float
                 if (out) {
                     chartTranslationOffset = lerp(0f, linesOffset * 4, value)
-                    chartAlpha = lerp(OPAQUE, TRANSPARENT, Math.abs(value))
+                    chartAlpha = lerp(
+                        OPAQUE,
+                        TRANSPARENT,
+                        Math.abs(value)
+                    )
                 } else {
                     chartTranslationOffset = lerp(linesOffset * -4, 0f, value)
-                    chartAlpha = lerp(TRANSPARENT, OPAQUE, Math.abs(value))
+                    chartAlpha = lerp(
+                        TRANSPARENT,
+                        OPAQUE,
+                        Math.abs(value)
+                    )
                 }
                 invalidate()
             }
@@ -454,7 +481,7 @@ class ChartView @JvmOverloads constructor(
 
     private fun drawValues(canvas: Canvas?) {
         var value = xAxisCoordinates.entries.find { it.value >= valuesAxisXCoordinate }?.key
-        if (value == null) value = xAxisCoordinates.entries.last().key
+        if (value == null) value = lastXValue
 
         val valuePosition = xAxis.indexOf(value)
 
@@ -495,11 +522,11 @@ class ChartView @JvmOverloads constructor(
         when (action) {
             MotionEvent.ACTION_DOWN -> {
                 valuesAxisXCoordinate = event.x
-                if (valuesAxisXCoordinate > xAxisCoordinates.entries.last().value) {
-                    valuesAxisXCoordinate = xAxisCoordinates.entries.last().value
+                if (valuesAxisXCoordinate > lastXCoordinate) {
+                    valuesAxisXCoordinate = lastXCoordinate
                 }
-                if (valuesAxisXCoordinate < xAxisCoordinates.entries.first().value) {
-                    valuesAxisXCoordinate = xAxisCoordinates.entries.first().value
+                if (valuesAxisXCoordinate < firstXCoordinate) {
+                    valuesAxisXCoordinate = firstXCoordinate
                 }
                 invalidate()
             }
@@ -522,16 +549,15 @@ class ChartView @JvmOverloads constructor(
         return height - (textPaint.textSize * OFFSET_COEFFICIENT) - linesHeight * (TITLES_COUNT - 1) - value * yCurrentMultiplier
     }
 
-    companion object {
-        const val OFFSET_COEFFICIENT = 2.5f
-        const val TITLES_COUNT = 6
-        const val ANIMATION_DURATION = 450L
-        const val ANIMATION_DELAY = 100L
-        const val TRANSPARENT = 0f
-        const val OPAQUE = 255f
-    }
-
     fun setChartViewListener(listener: ChartViewListener) {
         this.listener = listener
+    }
+
+    fun setupData(xAxis: ArrayList<Long>, yAxis: ArrayList<Chart.Column>) {
+        this.xAxis.clear()
+        this.xAxis.addAll(xAxis)
+        this.yAxis.clear()
+        this.yAxis.addAll(yAxis)
+        invalidate()
     }
 }

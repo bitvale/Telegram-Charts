@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import com.bitvale.chartview.Chart
+import com.bitvale.chartview.model.Chart
 import com.bitvale.chartview.ChartViewListener
 import kotlinx.android.synthetic.main.fragment_chart.*
 import java.text.SimpleDateFormat

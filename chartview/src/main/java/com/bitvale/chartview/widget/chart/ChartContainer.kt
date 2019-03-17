@@ -1,4 +1,4 @@
-package com.bitvale.chartview
+package com.bitvale.chartview.widget.chart
 
 import android.content.Context
 import android.graphics.Color
@@ -6,6 +6,10 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.core.view.updateMargins
+import com.bitvale.chartview.model.Chart
+import com.bitvale.chartview.ChartViewListener
+import com.bitvale.chartview.widget.ChipView
+import com.bitvale.chartview.R
 
 /**
  * Created by Alexander Kolpakov (jquickapp@gmail.com) on 10-Mar-19
@@ -34,8 +38,13 @@ class ChartContainer @JvmOverloads constructor(
     }
 
     fun setupData(chart: Chart) {
-        chartView.setupData(chart)
-        chartSpinner.setupData(chart)
+        val xAxis = chart.columns[0].values
+        val yAxis = ArrayList<Chart.Column>()
+        for (i in 1 until chart.columns.size) {
+            yAxis.add(chart.columns[i])
+        }
+        chartView.setupData(xAxis, yAxis)
+        chartSpinner.setupData(xAxis, yAxis)
         createControls(chart)
     }
 

@@ -1,4 +1,4 @@
-package com.bitvale.chartview
+package com.bitvale.chartview.model
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize

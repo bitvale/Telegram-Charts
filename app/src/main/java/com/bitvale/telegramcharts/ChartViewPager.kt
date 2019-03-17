@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import androidx.viewpager.widget.ViewPager
-import com.bitvale.chartview.ChartSpinner
+import com.bitvale.chartview.widget.chart.ChartSpinner
 
 /**
  * Created by Alexander Kolpakov (jquickapp@gmail.com) on 11-Mar-19

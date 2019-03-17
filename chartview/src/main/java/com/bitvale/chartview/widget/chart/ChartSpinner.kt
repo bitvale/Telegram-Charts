@@ -1,4 +1,4 @@
-package com.bitvale.chartview
+package com.bitvale.chartview.widget.chart
 
 import android.content.Context
 import android.graphics.*
@@ -6,9 +6,11 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.ColorInt
-import androidx.core.content.ContextCompat
 import androidx.core.content.res.getColorOrThrow
 import androidx.core.content.res.getDimensionPixelOffsetOrThrow
+import com.bitvale.chartview.model.Chart
+import com.bitvale.chartview.ChartSpinnerListener
+import com.bitvale.chartview.R
 
 
 /**
@@ -22,7 +24,7 @@ class ChartSpinner @JvmOverloads constructor(
 
     private var listener: ChartSpinnerListener? = null
 
-    private lateinit var xAxis: ArrayList<Long>
+    private var xAxis = ArrayList<Long>()
     private val yAxis = ArrayList<Chart.Column>()
 
     private val chartPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -177,15 +179,6 @@ class ChartSpinner @JvmOverloads constructor(
         canvas?.drawRect(frameOuterRect.right.toFloat(), 0f, width.toFloat(), spinnerHeight.toFloat(), paint)
     }
 
-    fun setupData(chart: Chart) {
-        xAxis = chart.columns[0].values
-
-        for (i in 1 until chart.columns.size) {
-            yAxis.add(chart.columns[i])
-        }
-        invalidate()
-    }
-
     private fun calculateMultipliers() {
         var max = 0
         yAxis.forEach {
@@ -263,5 +256,13 @@ class ChartSpinner @JvmOverloads constructor(
 
     fun setChartListener(listener: ChartSpinnerListener) {
         this.listener = listener
+    }
+
+    fun setupData(xAxis: ArrayList<Long>, yAxis: ArrayList<Chart.Column>) {
+        this.xAxis.clear()
+        this.xAxis.addAll(xAxis)
+        this.yAxis.clear()
+        this.yAxis.addAll(yAxis)
+        invalidate()
     }
 }

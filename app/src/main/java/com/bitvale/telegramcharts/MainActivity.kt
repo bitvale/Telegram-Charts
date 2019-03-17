@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import com.bitvale.chartview.Chart
+import com.bitvale.chartview.model.Chart
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONArray
 
