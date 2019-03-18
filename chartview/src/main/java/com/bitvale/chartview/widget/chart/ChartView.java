@@ -216,7 +216,7 @@ public class ChartView extends View implements ChartSpinnerListener {
             if (yAxisNewAnimatedOffset < 0) m = -1;
 
             axisPaint.setAlpha((int) yAxisNewAlpha);
-            if (i < TITLES_COUNT - 1) yOffset += yOffset - (linesOffset * m) + yAxisNewAnimatedOffset;
+            if (i < TITLES_COUNT - 1) yOffset = yOffset - (linesOffset * m) + yAxisNewAnimatedOffset;
             else axisPaint.setAlpha((int) OPAQUE);
 
             int checkpoint = canvas.save();
