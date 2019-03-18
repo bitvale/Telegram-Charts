@@ -87,6 +87,7 @@ public class ChartView extends View implements ChartSpinnerListener {
 
     private float chartAlpha = OPAQUE;
     private float chartTranslationOffset = 0f;
+    private int minHeight = 0;
 
     private float yAxisOldAlpha = OPAQUE;
     private float yAxisNewAlpha = TRANSPARENT;
@@ -142,6 +143,8 @@ public class ChartView extends View implements ChartSpinnerListener {
 
         int fillColor = a.getColor(R.styleable.ChartView_value_fill_color, 0);
         valueFillPaint.setColor(fillColor);
+
+        minHeight = a.getDimensionPixelSize(R.styleable.ChartView_chart_min_height, 0);
         a.recycle();
     }
 
@@ -151,6 +154,7 @@ public class ChartView extends View implements ChartSpinnerListener {
         int widthSize = View.MeasureSpec.getSize(widthMeasureSpec);
         int heightSize = View.MeasureSpec.getSize(heightMeasureSpec);
         int h = heightSize - heightSize / 3;
+        if (h < minHeight) h = minHeight;
         setMeasuredDimension(widthSize, h);
     }
 

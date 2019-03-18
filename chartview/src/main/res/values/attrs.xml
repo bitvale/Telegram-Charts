@@ -6,6 +6,7 @@
     <declare-styleable name="ChartView">
         <attr name="android:textSize" format="dimension"/>
         <attr name="chart_stroke_width" format="dimension"/>
+        <attr name="chart_min_height" format="dimension"/>
         <attr name="axis_text_color" format="color"/>
         <attr name="line_color" format="color"/>
         <attr name="value_fill_color" format="color"/>
