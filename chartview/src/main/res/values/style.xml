@@ -6,6 +6,7 @@
         <item name="line_color">@color/lines_color</item>
         <item name="value_fill_color">@color/value_fill_color</item>
         <item name="chart_stroke_width">@dimen/chart_stroke_width</item>
+        <item name="chart_min_height">@dimen/chart_min_height</item>
     </style>
 
     <style name="ChartViewNight" parent="ChartView">

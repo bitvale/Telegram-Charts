@@ -3,6 +3,7 @@
     <dimen name="text_size">14sp</dimen>
     <dimen name="def_margin">16dp</dimen>
     <dimen name="spinner_height">56dp</dimen>
+    <dimen name="chart_min_height">260dp</dimen>
 
     <dimen name="space_small">8dp</dimen>
     <dimen name="padding_small">@dimen/space_small</dimen>

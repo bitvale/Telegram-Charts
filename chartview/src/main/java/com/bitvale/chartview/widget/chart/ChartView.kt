@@ -15,6 +15,7 @@ import androidx.annotation.ColorInt
 import androidx.core.animation.doOnEnd
 import androidx.core.content.res.getColorOrThrow
 import androidx.core.content.res.getDimensionOrThrow
+import androidx.core.content.res.getDimensionPixelOffsetOrThrow
 import androidx.core.graphics.withTranslation
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.bitvale.chartview.*
@@ -93,6 +94,8 @@ class ChartView @JvmOverloads constructor(
     private var chartAlpha = OPAQUE
     private var chartTranslationOffset = 0f
 
+    private var minHeight = 0
+
     private var yAxisOldAlpha = OPAQUE
     private var yAxisNewAlpha = TRANSPARENT
 
@@ -136,6 +139,8 @@ class ChartView @JvmOverloads constructor(
         }
 
         valueFillPaint.color = a.getColorOrThrow(R.styleable.ChartView_value_fill_color)
+
+        minHeight = a.getDimensionPixelOffsetOrThrow(R.styleable.ChartView_chart_min_height)
         a.recycle()
     }
 
@@ -144,7 +149,8 @@ class ChartView @JvmOverloads constructor(
         val widthSize = View.MeasureSpec.getSize(widthMeasureSpec)
         val heightSize = View.MeasureSpec.getSize(heightMeasureSpec)
 
-        val h = heightSize - heightSize / 3
+        var h = heightSize - heightSize / 3
+        if (h < minHeight) h = minHeight
         setMeasuredDimension(widthSize, h)
     }
 
