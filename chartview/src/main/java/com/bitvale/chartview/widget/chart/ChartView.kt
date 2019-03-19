@@ -24,6 +24,10 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
+import android.R.attr.end
+import android.R.attr.start
+
+
 
 
 /**
@@ -95,6 +99,8 @@ class ChartView @JvmOverloads constructor(
     private var chartTranslationOffset = 0f
 
     private var minHeight = 0
+
+    private var dx = 0f
 
     private var yAxisOldAlpha = OPAQUE
     private var yAxisNewAlpha = TRANSPARENT
@@ -288,25 +294,37 @@ class ChartView @JvmOverloads constructor(
         var end = if (daysAfterFrame == 0) endIndex else if (daysBeforeFrame == 0) endIndex - 1 else endIndex
         if (end > endIndex) end = endIndex
 
-        for ((j, i) in (start..end step step).withIndex()) {
-            var title = dayFormat.format(xAxis[i])
-            val xOffset = j * textStep
+        if(dx != 0f) {
+            if (end < step) end += step
+            if (start > step) start -= step
+        }
+
+        for (i in -1..(TITLES_COUNT + 1)) {
+            var index = start + i * step
+            if (index < 0) index = start
+            if (index > end) index = end
+
+            var title = dayFormat.format(xAxis[index])
+            val xOffset = i * textStep
             var textWidth = textPaint.measureText(title)
             var value = xAxisCoordinates.entries.find { it.value >= (xOffset + textWidth / 2f) }?.key
             if (value == null) value = lastXValue
 
             title = dayFormat.format(value)
 
-            if (j == TITLES_COUNT - 1 && daysAfterFrame == 0) title = dayFormat.format(xAxis[end])
-            if (j == 0 && daysBeforeFrame == 0) title = dayFormat.format(xAxis[start])
+//            if (j == TITLES_COUNT - 1 && daysAfterFrame == 0) title = dayFormat.format(xAxis[end])
+//            if (j == 0 && daysBeforeFrame == 0) title = dayFormat.format(xAxis[start])
 
             textWidth = textPaint.measureText(title)
             val textStartX = (textStep - textWidth) / 2f
 
             textPaint.alpha = OPAQUE.toInt()
 
+            var canvasDx = xOffset
+            if (daysBeforeFrame != 0 && daysAfterFrame != 0) canvasDx = xOffset - (dx % textStep)
+
             canvas?.withTranslation(
-                x = xOffset,
+                x = canvasDx,
                 y = yOffset
             ) {
                 drawText(title, textStartX, linesHeight * 2f, textPaint)
@@ -540,7 +558,7 @@ class ChartView @JvmOverloads constructor(
         return true
     }
 
-    override fun onRangeChanged(daysBeforeFrame: Int, daysAfterFrame: Int, daysInFrame: Int) {
+    override fun onRangeChanged(daysBeforeFrame: Int, daysAfterFrame: Int, daysInFrame: Int, dx: Float) {
         this.daysBeforeFrame = daysBeforeFrame
         this.daysAfterFrame = daysAfterFrame
         this.daysInFrame = daysInFrame
@@ -548,6 +566,7 @@ class ChartView @JvmOverloads constructor(
         endIndex = if (daysAfterFrame == 0) daysBeforeFrame + daysInFrame - 1 else daysBeforeFrame + daysInFrame
         valuesAxisXCoordinate = 0f
         listener?.onDataCleared()
+        this.dx = dx
         invalidate()
     }
 

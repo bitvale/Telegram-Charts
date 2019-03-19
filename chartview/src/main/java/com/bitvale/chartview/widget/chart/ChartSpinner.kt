@@ -53,6 +53,8 @@ class ChartSpinner @JvmOverloads constructor(
     private var currentFrameWidth = 0
 
     private var dX: Float = 0f
+    private var deltaX: Float = 0f
+
     var currentOuterLeft = 0
     var currentOuterRight = 0
 
@@ -170,7 +172,7 @@ class ChartSpinner @JvmOverloads constructor(
             if (daysAfterFrame > xAxis.size - daysBeforeFrame - daysInFrame) daysAfterFrame =
                 xAxis.size - daysAfterFrame - daysInFrame
         }
-        listener?.onRangeChanged(daysBeforeFrame, daysAfterFrame, daysInFrame)
+        listener?.onRangeChanged(daysBeforeFrame, daysAfterFrame, daysInFrame, deltaX)
     }
 
     private fun drawForeground(canvas: Canvas?) {
@@ -211,6 +213,7 @@ class ChartSpinner @JvmOverloads constructor(
                 }
             }
             MotionEvent.ACTION_MOVE -> {
+                deltaX = 0f
                 var l = currentOuterLeft + (x - dX).toInt()
                 var r = currentOuterRight + (x - dX).toInt()
                 if (moveLeftBorder) {
@@ -233,6 +236,7 @@ class ChartSpinner @JvmOverloads constructor(
                         }
                         frameInnerRect.right = frameOuterRect.right - (frameSideSize * 1.5).toInt()
                     } else {
+                        deltaX = x - dX
                         if (l < 0) {
                             r = frameOuterRect.right
                             l = 0
