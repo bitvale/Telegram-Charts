@@ -306,7 +306,7 @@ public class ChartView extends View implements ChartSpinnerListener {
         if (end > endIndex) end = endIndex;
 
         int j = 0;
-        for (int i = start; i < end; i += step) {
+        for (int i = start; i < end + 1; i += step) {
             String title = dayFormat.format(xAxis.get(i));
             float xOffset = j * textStep;
             float textWidth = textPaint.measureText(title);
