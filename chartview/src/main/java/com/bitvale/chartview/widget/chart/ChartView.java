@@ -12,6 +12,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.ColorInt;
@@ -88,6 +89,8 @@ public class ChartView extends View implements ChartSpinnerListener {
     private float chartAlpha = OPAQUE;
     private float chartTranslationOffset = 0f;
     private int minHeight = 0;
+
+    float dx = 0f;
 
     private float yAxisOldAlpha = OPAQUE;
     private float yAxisNewAlpha = TRANSPARENT;
@@ -287,7 +290,7 @@ public class ChartView extends View implements ChartSpinnerListener {
     }
 
     private void drawXAxisTitles(Canvas canvas) {
-        float textStep = getWidth() / (TITLES_COUNT - 0f);
+        float textStep = getWidth() / (TITLES_COUNT + 0f);
 
         float yOffset = getHeight() - (textPaint.getTextSize() * (OFFSET_COEFFICIENT / 2f));
 
@@ -305,10 +308,18 @@ public class ChartView extends View implements ChartSpinnerListener {
         else end = endIndex;
         if (end > endIndex) end = endIndex;
 
-        int j = 0;
-        for (int i = start; i < end + 1; i += step) {
-            String title = dayFormat.format(xAxis.get(i));
-            float xOffset = j * textStep;
+        if(dx != 0f) {
+            if (end < step) end += step;
+            if (start > step) start -= step;
+        }
+
+        for (int i = -1; i < TITLES_COUNT + 1; i ++) {
+            int index = start + i * step;
+            if (index < 0) index = start;
+            if (index > end) index = end;
+
+            String title = dayFormat.format(xAxis.get(index));
+            float xOffset = i * textStep;
             float textWidth = textPaint.measureText(title);
 
             Long value = null;
@@ -328,20 +339,21 @@ public class ChartView extends View implements ChartSpinnerListener {
 
             title = dayFormat.format(value);
 
-            if (j == TITLES_COUNT - 1 && daysAfterFrame == 0) title = dayFormat.format(xAxis.get(end));
-            if (j == 0 && daysBeforeFrame == 0) title = dayFormat.format(xAxis.get(start));
+//            if (j == TITLES_COUNT - 1 && daysAfterFrame == 0) title = dayFormat.format(xAxis.get(end));
+//            if (j == 0 && daysBeforeFrame == 0) title = dayFormat.format(xAxis.get(start));
 
             textWidth = textPaint.measureText(title);
             float textStartX = (textStep - textWidth) / 2f;
 
             textPaint.setAlpha((int) OPAQUE);
 
+            float canvasDx = xOffset;
+            if (daysBeforeFrame != 0f && daysAfterFrame != 0) canvasDx = xOffset - (dx % textStep);
+
             int checkpoint = canvas.save();
-            canvas.translate(xOffset, yOffset);
+            canvas.translate(canvasDx, yOffset);
             canvas.drawText(title, textStartX, linesHeight * 2f, textPaint);
             canvas.restoreToCount(checkpoint);
-
-            j++;
         }
     }
 
@@ -580,7 +592,7 @@ public class ChartView extends View implements ChartSpinnerListener {
     }
 
     @Override
-    public void onRangeChanged(int daysBeforeFrame, int daysAfterFrame, int daysInFrame) {
+    public void onRangeChanged(int daysBeforeFrame, int daysAfterFrame, int daysInFrame, float dx) {
         this.daysBeforeFrame = daysBeforeFrame;
         this.daysAfterFrame = daysAfterFrame;
         this.daysInFrame = daysInFrame;
@@ -592,6 +604,7 @@ public class ChartView extends View implements ChartSpinnerListener {
 
         valuesAxisXCoordinate = 0f;
         listener.onDataCleared();
+        this.dx = dx;
         invalidate();
     }
 

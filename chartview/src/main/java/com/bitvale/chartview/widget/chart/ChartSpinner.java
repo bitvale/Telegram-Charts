@@ -51,6 +51,7 @@ public class ChartSpinner extends View {
     private int currentFrameWidth = 0;
 
     private float dX = 0f;
+    float deltaX;
     private int currentOuterLeft = 0;
     private int currentOuterRight = 0;
 
@@ -181,7 +182,7 @@ public class ChartSpinner extends View {
             if (daysAfterFrame > xAxis.size() - daysBeforeFrame - daysInFrame) daysAfterFrame =
                     xAxis.size() - daysAfterFrame - daysInFrame;
         }
-        listener.onRangeChanged(daysBeforeFrame, daysAfterFrame, daysInFrame);
+        listener.onRangeChanged(daysBeforeFrame, daysAfterFrame, daysInFrame, deltaX);
     }
 
     private void drawForeground(Canvas canvas) {
@@ -223,6 +224,7 @@ public class ChartSpinner extends View {
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
+                deltaX = 0;
                 int l = currentOuterLeft + (int) (x - dX);
                 int r = currentOuterRight + (int) (x - dX);
                 if (moveLeftBorder) {
@@ -245,6 +247,7 @@ public class ChartSpinner extends View {
                         }
                         frameInnerRect.right = frameOuterRect.right - (int) (frameSideSize * 1.5);
                     } else {
+                        deltaX = x - dX;
                         if (l < 0) {
                             r = frameOuterRect.right;
                             l = 0;
