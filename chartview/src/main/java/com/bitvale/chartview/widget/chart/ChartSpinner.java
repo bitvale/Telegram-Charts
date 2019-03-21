@@ -1,19 +1,30 @@
 package com.bitvale.chartview.widget.chart;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.*;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import com.bitvale.chartview.ChartSpinnerListener;
 import com.bitvale.chartview.R;
+import com.bitvale.chartview.Utils;
 import com.bitvale.chartview.model.Chart;
 
 import java.util.ArrayList;
 import java.util.Collections;
+
+import static com.bitvale.chartview.widget.chart.ChartView.ANIMATION_DURATION;
+import static com.bitvale.chartview.widget.chart.ChartView.OPAQUE;
+import static com.bitvale.chartview.widget.chart.ChartView.TRANSPARENT;
 
 /**
  * Created by Alexander Kolpakov (jquickapp@gmail.com) on 16-Mar-19
@@ -57,6 +68,12 @@ public class ChartSpinner extends View {
 
     private boolean moveLeftBorder = false;
     private boolean moveRightBorder = false;
+
+    private ValueAnimator translateAnimator;
+    private float linesOffset = 0f;
+
+    private float chartAlpha = OPAQUE;
+    private float chartTranslationOffset = 0f;
 
     public ChartSpinner(Context context) {
         super(context);
@@ -106,6 +123,8 @@ public class ChartSpinner extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         if (yAxis.isEmpty()) return;
+        linesOffset = h / 4f;
+        xMultiplier = ((float) getWidth()) / (xAxis.size() - 1);
         calculateMultipliers();
         calculateFrameSize();
     }
@@ -114,8 +133,10 @@ public class ChartSpinner extends View {
     protected void onDraw(Canvas canvas) {
         if (yAxis.isEmpty()) return;
 
+        calculateMultipliers();
         for (int i = 0; i < yAxis.size(); i++) {
-            if (yAxis.get(i).enabled) drawChart(canvas, yAxis.get(i));
+            Chart.Column column = yAxis.get(i);
+            if (column.enabled || column.animation != Chart.ChartAnimation.NONE) drawChart(canvas, yAxis.get(i));
         }
         drawFrame(canvas);
         drawForeground(canvas);
@@ -128,9 +149,11 @@ public class ChartSpinner extends View {
 
         for (int i = 0; i < column.values.size(); i++) {
             float x = i * xMultiplier;
-            float y = getHeight() - column.values.get(i) * yMultiplier;
-            if (y >= getHeight() / 2) y -= smallPadding;
-            else y += smallPadding;
+            float y = getHeight() - column.values.get(i) * yCurrentMultiplier - smallPadding;
+            if (column.animation != Chart.ChartAnimation.NONE) {
+                y += chartTranslationOffset;
+                chartPaint.setAlpha((int) chartAlpha);
+            }
             if (i == 0) {
                 chartPath.moveTo(x, y);
             } else {
@@ -138,6 +161,41 @@ public class ChartSpinner extends View {
             }
         }
         canvas.drawPath(chartPath, chartPaint);
+    }
+
+    public void animateInOut(boolean out) {
+        if (translateAnimator != null) translateAnimator.cancel();
+
+        float from = 0f;
+        float to = 1f;
+        if (out) to = -1f;
+
+        translateAnimator = ValueAnimator.ofFloat(from, to);
+
+        translateAnimator.addUpdateListener(animation -> {
+            float value = (float) animation.getAnimatedValue();
+            if (out) {
+                chartTranslationOffset = Utils.lerp(0f, linesOffset * 4, value);
+                chartAlpha = Utils.lerp(OPAQUE, TRANSPARENT, Math.abs(value));
+            } else {
+                chartTranslationOffset = Utils.lerp(linesOffset * -4, 0f, value);
+                chartAlpha = Utils.lerp(TRANSPARENT, OPAQUE, Math.abs(value));
+            }
+            invalidate();
+        });
+        translateAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                for (int i = 0; i < yAxis.size(); i++) {
+                    yAxis.get(i).animation = Chart.ChartAnimation.NONE;
+                }
+            }
+        });
+
+        translateAnimator.setInterpolator(new FastOutSlowInInterpolator());
+        translateAnimator.setDuration(ANIMATION_DURATION);
+
+        translateAnimator.start();
     }
 
     private void drawFrame(Canvas canvas) {
@@ -194,12 +252,40 @@ public class ChartSpinner extends View {
     private void calculateMultipliers() {
         int max = 0;
         for (int i = 0; i < yAxis.size(); i++) {
-            long newMax = Collections.max(yAxis.get(i).values);
-            if (newMax > max) max = (int) newMax;
+            Chart.Column column = yAxis.get(i);
+            if (column.enabled || column.animation == Chart.ChartAnimation.DOWN) {
+                long newMax = Collections.max(yAxis.get(i).values);
+                if (newMax > max) max = (int) newMax;
+            }
         }
 
-        xMultiplier = ((float) getWidth()) / (xAxis.size() - 1);
-        yMultiplier = ((float) spinnerHeight) / max;
+        yMultiplier = ((float) spinnerHeight - smallPadding * 2) / max;
+
+        if (yCurrentMultiplier == 0f) yCurrentMultiplier = yMultiplier;
+        
+        if (yMaxValue != 0) {
+            if (yMaxValue > max) startYAxisAnimation();
+            else if (yMaxValue < max) startYAxisAnimation();
+        }
+        yMaxValue = max;
+    }
+
+    private ValueAnimator yMultiplierAnimator;
+    private float yCurrentMultiplier = 0f;
+    private int yMaxValue = 0;
+
+    private void startYAxisAnimation() {
+        if (yMultiplierAnimator != null) yMultiplierAnimator.cancel();
+
+        yMultiplierAnimator = ValueAnimator.ofFloat(yCurrentMultiplier, yMultiplier);
+
+        yMultiplierAnimator.addUpdateListener(animation -> {
+            yCurrentMultiplier = (float) animation.getAnimatedValue();
+            invalidate();
+        });
+
+        yMultiplierAnimator.setDuration(ANIMATION_DURATION);
+        yMultiplierAnimator.start();
     }
 
     @Override
@@ -269,7 +355,7 @@ public class ChartSpinner extends View {
         return true;
     }
 
-    public void setupData(ArrayList<Long> xAxis,  ArrayList<Chart.Column> yAxis) {
+    public void setupData(ArrayList<Long> xAxis, ArrayList<Chart.Column> yAxis) {
         this.xAxis.clear();
         this.yAxis.clear();
         this.xAxis.addAll(xAxis);

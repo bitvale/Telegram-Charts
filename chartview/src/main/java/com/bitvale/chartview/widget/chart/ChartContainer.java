@@ -95,6 +95,7 @@ public class ChartContainer extends LinearLayout {
                 column.animation = animation;
 
                 chartView.animateInOut(chip.isChecked());
+                chartSpinner.animateInOut(chip.isChecked());
                 chip.animateChecked();
                 chartSpinner.invalidate();
             });

@@ -35,10 +35,10 @@ public class ChartView extends View implements ChartSpinnerListener {
 
     private static final float OFFSET_COEFFICIENT = 2.5f;
     private static final int TITLES_COUNT = 6;
-    private static final long ANIMATION_DURATION = 450L;
+    public static final long ANIMATION_DURATION = 450L;
     private static final long ANIMATION_DELAY = 100L;
-    private static final float TRANSPARENT = 0f;
-    private static final float OPAQUE = 255f;
+    public static final float TRANSPARENT = 0f;
+    public static final float OPAQUE = 255f;
 
     private ChartViewListener listener;
 
