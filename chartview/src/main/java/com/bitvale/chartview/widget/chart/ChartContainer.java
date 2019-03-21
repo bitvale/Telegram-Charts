@@ -101,7 +101,6 @@ public class ChartContainer extends LinearLayout {
             });
             controlsContainer.addView(chip);
         }
-
     }
 
     public void setChartViewListener(ChartViewListener listener) {

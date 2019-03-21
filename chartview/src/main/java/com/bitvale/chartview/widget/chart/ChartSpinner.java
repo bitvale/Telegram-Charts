@@ -62,7 +62,8 @@ public class ChartSpinner extends View {
     private int currentFrameWidth = 0;
 
     private float dX = 0f;
-    float deltaX;
+    private float deltaX;
+    private  ChartSpinner.State state = State.IDLE;
     private int currentOuterLeft = 0;
     private int currentOuterRight = 0;
 
@@ -240,7 +241,7 @@ public class ChartSpinner extends View {
             if (daysAfterFrame > xAxis.size() - daysBeforeFrame - daysInFrame) daysAfterFrame =
                     xAxis.size() - daysAfterFrame - daysInFrame;
         }
-        listener.onRangeChanged(daysBeforeFrame, daysAfterFrame, daysInFrame, deltaX);
+        listener.onRangeChanged(daysBeforeFrame, daysAfterFrame, daysInFrame, deltaX, state);
     }
 
     private void drawForeground(Canvas canvas) {
@@ -262,7 +263,7 @@ public class ChartSpinner extends View {
         yMultiplier = ((float) spinnerHeight - smallPadding * 2) / max;
 
         if (yCurrentMultiplier == 0f) yCurrentMultiplier = yMultiplier;
-        
+
         if (yMaxValue != 0) {
             if (yMaxValue > max) startYAxisAnimation();
             else if (yMaxValue < max) startYAxisAnimation();
@@ -294,6 +295,9 @@ public class ChartSpinner extends View {
         int action = event.getAction() & MotionEvent.ACTION_MASK;
 
         switch (action) {
+            case MotionEvent.ACTION_UP:
+                state = State.IDLE;
+                break;
             case MotionEvent.ACTION_DOWN:
                 dX = x;
                 currentOuterLeft = frameOuterRect.left;
@@ -311,6 +315,7 @@ public class ChartSpinner extends View {
                 break;
             case MotionEvent.ACTION_MOVE:
                 deltaX = 0;
+                state = State.DRAGGIN;
                 int l = currentOuterLeft + (int) (x - dX);
                 int r = currentOuterRight + (int) (x - dX);
                 if (moveLeftBorder) {
@@ -319,6 +324,7 @@ public class ChartSpinner extends View {
                         frameOuterRect.left = frameOuterRect.right - minFrameWidth;
                     }
                     if (frameOuterRect.left < 0) {
+                        state = State.IDLE;
                         frameOuterRect.left = 0;
                     }
                     frameInnerRect.left = frameOuterRect.left + (int) (frameSideSize * 1.5);
@@ -329,16 +335,19 @@ public class ChartSpinner extends View {
                             frameOuterRect.right = frameOuterRect.left + minFrameWidth;
                         }
                         if (frameOuterRect.right > getWidth()) {
+                            state = State.IDLE;
                             frameOuterRect.right = getWidth();
                         }
                         frameInnerRect.right = frameOuterRect.right - (int) (frameSideSize * 1.5);
                     } else {
                         deltaX = x - dX;
                         if (l < 0) {
+                            state = State.IDLE;
                             r = frameOuterRect.right;
                             l = 0;
                         }
                         if (r > getWidth()) {
+                            state = State.IDLE;
                             r = getWidth();
                             l = frameOuterRect.left;
                         }
@@ -365,5 +374,11 @@ public class ChartSpinner extends View {
 
     public void setChartListener(ChartSpinnerListener listener) {
         this.listener = listener;
+    }
+
+
+    public enum State {
+        DRAGGIN,
+        IDLE
     }
 }

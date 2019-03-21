@@ -6,14 +6,14 @@ android {
         applicationId "com.bitvale.telegramcharts"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 2
+        versionCode 3
         versionName "1.0"
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -27,5 +27,4 @@ dependencies {
     implementation project(":chartview")
     implementation 'androidx.appcompat:appcompat:1.1.0-alpha02'
     implementation 'androidx.cardview:cardview:1.0.0'
-
 }

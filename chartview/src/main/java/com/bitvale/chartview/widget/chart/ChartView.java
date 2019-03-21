@@ -6,18 +6,13 @@ import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
+import android.graphics.*;
 import android.text.TextPaint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
 import com.bitvale.chartview.ChartSpinnerListener;
 import com.bitvale.chartview.ChartViewListener;
@@ -37,6 +32,9 @@ public class ChartView extends View implements ChartSpinnerListener {
     private static final int TITLES_COUNT = 6;
     public static final long ANIMATION_DURATION = 450L;
     private static final long ANIMATION_DELAY = 100L;
+    private static final long BLUR_ANIMATION_DURATION = 150L;
+    private static final float BLUR_START = 0.01f;
+    private static final float BLUR_END = 8f;
     public static final float TRANSPARENT = 0f;
     public static final float OPAQUE = 255f;
 
@@ -50,6 +48,7 @@ public class ChartView extends View implements ChartSpinnerListener {
     private Paint valueFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint chartPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+    private Paint xTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
 
     private float linesHeight = 0f;
     private float linesOffset = 0f;
@@ -91,6 +90,9 @@ public class ChartView extends View implements ChartSpinnerListener {
     private int minHeight = 0;
 
     float dx = 0f;
+    float blur = 0.01f;
+
+    private ValueAnimator blurAnimator;
 
     private float yAxisOldAlpha = OPAQUE;
     private float yAxisNewAlpha = TRANSPARENT;
@@ -98,8 +100,8 @@ public class ChartView extends View implements ChartSpinnerListener {
     private boolean isChartDrawing = false;
 
     private AnimatorSet animatorSet = new AnimatorSet();
-    private AnimatorSet inOutAnimatorSet = new AnimatorSet();
     private ValueAnimator yMultiplierAnimator;
+    private ValueAnimator translateAnimator;
 
     private SimpleDateFormat dayFormat = new SimpleDateFormat("MMM d", Locale.US);
 
@@ -119,6 +121,8 @@ public class ChartView extends View implements ChartSpinnerListener {
     }
 
     private void init(Context context, AttributeSet attrs, int defStyleAttr) {
+        setLayerType(LAYER_TYPE_SOFTWARE, null);
+
         TypedArray a = context.obtainStyledAttributes(
                 attrs,
                 R.styleable.ChartView,
@@ -133,7 +137,8 @@ public class ChartView extends View implements ChartSpinnerListener {
         float textPaintTextSize = a.getDimension(R.styleable.ChartView_android_textSize, 0f);
         textPaint.setColor(textPaintColor);
         textPaint.setTextSize(textPaintTextSize);
-
+        xTextPaint.setColor(textPaintColor);
+        xTextPaint.setTextSize(textPaintTextSize);
 
         linesHeight = context.getResources().getDisplayMetrics().density * 2;
 
@@ -166,7 +171,6 @@ public class ChartView extends View implements ChartSpinnerListener {
         super.onSizeChanged(w, h, oldw, oldh);
         linesOffset = (h - (textPaint.getTextSize() * (OFFSET_COEFFICIENT * 2f)) - linesHeight * TITLES_COUNT) / (TITLES_COUNT - 1);
     }
-
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -308,12 +312,12 @@ public class ChartView extends View implements ChartSpinnerListener {
         else end = endIndex;
         if (end > endIndex) end = endIndex;
 
-        if(dx != 0f) {
+        if (dx != 0f) {
             if (end < step) end += step;
             if (start > step) start -= step;
         }
 
-        for (int i = -1; i < TITLES_COUNT + 1; i ++) {
+        for (int i = -1; i < TITLES_COUNT + 1; i++) {
             int index = start + i * step;
             if (index < 0) index = start;
             if (index > end) index = end;
@@ -350,9 +354,11 @@ public class ChartView extends View implements ChartSpinnerListener {
             float canvasDx = xOffset;
             if (daysBeforeFrame != 0f && daysAfterFrame != 0) canvasDx = xOffset - (dx % textStep);
 
+            xTextPaint.setMaskFilter(new BlurMaskFilter(blur, BlurMaskFilter.Blur.NORMAL));
+
             int checkpoint = canvas.save();
             canvas.translate(canvasDx, yOffset);
-            canvas.drawText(title, textStartX, linesHeight * 2f, textPaint);
+            canvas.drawText(title, textStartX, linesHeight * 2f, xTextPaint);
             canvas.restoreToCount(checkpoint);
         }
     }
@@ -453,13 +459,13 @@ public class ChartView extends View implements ChartSpinnerListener {
     }
 
     public void animateInOut(boolean out) {
-        inOutAnimatorSet.cancel();
+        if (translateAnimator != null) translateAnimator.cancel();
 
         float from = 0f;
         float to = 1f;
         if (out) to = -1f;
 
-        ValueAnimator translateAnimator = ValueAnimator.ofFloat(from, to);
+        translateAnimator = ValueAnimator.ofFloat(from, to);
 
         translateAnimator.addUpdateListener(animation -> {
             float value = (float) animation.getAnimatedValue();
@@ -484,9 +490,7 @@ public class ChartView extends View implements ChartSpinnerListener {
         translateAnimator.setInterpolator(new FastOutSlowInInterpolator());
         translateAnimator.setDuration(ANIMATION_DURATION);
 
-        inOutAnimatorSet.playTogether(translateAnimator);
-        inOutAnimatorSet.start();
-
+        translateAnimator.start();
     }
 
     private void drawChart(Canvas canvas, Chart.Column column) {
@@ -592,7 +596,7 @@ public class ChartView extends View implements ChartSpinnerListener {
     }
 
     @Override
-    public void onRangeChanged(int daysBeforeFrame, int daysAfterFrame, int daysInFrame, float dx) {
+    public void onRangeChanged(int daysBeforeFrame, int daysAfterFrame, int daysInFrame, float dx, ChartSpinner.State state) {
         this.daysBeforeFrame = daysBeforeFrame;
         this.daysAfterFrame = daysAfterFrame;
         this.daysInFrame = daysInFrame;
@@ -604,8 +608,34 @@ public class ChartView extends View implements ChartSpinnerListener {
 
         valuesAxisXCoordinate = 0f;
         listener.onDataCleared();
+
+        switch (state) {
+            case IDLE:
+                animateBlur();
+                break;
+            case DRAGGIN:
+                if (blurAnimator != null) blurAnimator.cancel();
+                blur = BLUR_END;
+                break;
+        }
         this.dx = dx;
         invalidate();
+    }
+
+    private void animateBlur() {
+        if (blurAnimator != null && blurAnimator.isRunning()) return;
+
+        blurAnimator = ValueAnimator.ofFloat(blur, BLUR_START);
+
+        blurAnimator.addUpdateListener(animation -> {
+            blur = (float) animation.getAnimatedValue();
+            invalidate();
+        });
+
+        blurAnimator.setInterpolator(new FastOutSlowInInterpolator());
+        blurAnimator.setDuration(BLUR_ANIMATION_DURATION);
+
+        blurAnimator.start();
     }
 
     private float getYCoordinate(float value) {
@@ -616,7 +646,7 @@ public class ChartView extends View implements ChartSpinnerListener {
         this.listener = listener;
     }
 
-    public void setupData(ArrayList<Long> xAxis,  ArrayList<Chart.Column> yAxis) {
+    public void setupData(ArrayList<Long> xAxis, ArrayList<Chart.Column> yAxis) {
         this.xAxis.clear();
         this.yAxis.clear();
         this.xAxis.addAll(xAxis);
